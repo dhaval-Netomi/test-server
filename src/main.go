@@ -14,6 +14,11 @@ import (
 	"gopkg.in/oauth2.v3/store"
 )
 
+var (
+	username = "heimdall"
+	password = "secret"
+)
+
 func main() {
 	manager := manage.NewDefaultManager()
 	manager.SetAuthorizeCodeTokenCfg(manage.DefaultAuthorizeCodeTokenCfg)
@@ -59,6 +64,30 @@ func main() {
 
 	http.HandleFunc("/token", func(w http.ResponseWriter, r *http.Request) {
 		srv.HandleTokenRequest(w, r)
+	})
+
+	http.HandleFunc("/basic", func (w http.ResponseWriter, r *http.Request) {
+
+		u, p, ok := r.BasicAuth()
+		if !ok {
+			fmt.Println("Error parsing basic auth")
+			w.WriteHeader(401)
+			return
+		}
+		if u != username {
+			fmt.Printf("Username provided is correct: %s\n", u)
+			w.WriteHeader(401)
+			return
+		}
+		if p != password {
+			fmt.Printf("Password provided is correct: %s\n", u)
+			w.WriteHeader(401)
+			return
+		}
+		fmt.Printf("Username: %s\n", u)
+		fmt.Printf("Password: %s\n", p)
+		w.WriteHeader(200)
+		return
 	})
 
 	log.Fatal(http.ListenAndServe(":9096", logRequest(http.DefaultServeMux)))
